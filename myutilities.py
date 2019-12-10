@@ -58,41 +58,49 @@ def index_compare(df1, df2, category):
     gini_norm2 = np.divide(gini2 * s2, s2-1)
     J2 = evenness(s2, shannon2)
 
-    fig = go.Figure()
+    indices = ['Gini Index', 'Shannon Index']
 
-    layout = go.Layout(
-        title="Index comparison between univariate and joint distribution",
-        xaxis = dict(
-            title = category + " + Target",
-            showticklabels=False),
-        yaxis = dict(
-            title = 'Index value'
-        )
-    )
-    fig.add_trace(go.Scatter(
-        x=[0, 2],
-        y=[gini_norm1, gini_norm2],
-        name="Gini Index",
-        mode = "lines+markers+text",
-        text = ["Univariate","Joint"],
-        textposition = "top right",
-        hoverinfo="y+text"
-    ))
-
-
-    fig.add_trace(go.Scatter(
-        x=[2.5, 4.5],
-        y=[J1, J2],
-        name="Shannon Index",
-        mode = "lines+markers+text",
-        text = ["Univariate","Joint"],
-        textposition = "top right",
-        hoverinfo="y+text"
-    ))
-
-    fig.update_layout(layout)
-
+    fig = go.Figure(data=[
+    go.Bar(name="Univariate", x=indices, y=[gini_norm1, J1]),
+    go.Bar(name="Joint", x=indices, y=[gini_norm2, J2])
+    ])
+    # Change the bar mode
+    fig.update_layout(barmode='stack')
     fig.show()
+
+    # layout = go.Layout(
+    #     title="Index comparison between univariate and joint distribution",
+    #     xaxis = dict(
+    #         title = category + " + Target",
+    #         showticklabels=False),
+    #     yaxis = dict(
+    #         title = 'Index value'
+    #     )
+    # )
+    # fig.add_trace(go.Scatter(
+    #     x=[0,0],
+    #     y=[gini_norm1, gini_norm2],
+    #     name="Gini Index",
+    #     mode = "markers+text",
+    #     text = ["Univariate","Joint"],
+    #     textposition = "top right",
+    #     hoverinfo="y+text"
+    # ))
+
+
+    # fig.add_trace(go.Scatter(
+    #     x=[1,1],
+    #     y=[J1, J2],
+    #     name="Shannon Index",
+    #     mode = "markers+text",
+    #     text = ["Univariate","Joint"],
+    #     textposition = "top right",
+    #     hoverinfo="y+text"
+    # ))
+
+    # fig.update_layout(layout)
+
+    # fig.show()
 
 
 def disproportion_index(df, category):
