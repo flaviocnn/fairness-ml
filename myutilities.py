@@ -69,6 +69,9 @@ def disproportion_index(df, category):
 
 
 def bar_plot(new_series, category):
+    categoryorder = "array"
+    if(category == "AGE-bin"):
+        categoryorder = "category ascending"
     # new_series must have categorical attribute as index and number of occurrencies as value (in column)
     s = new_series
     perc = [str((100 * x).round(2)) + "%" for x in (s.array/s.sum())]
@@ -77,7 +80,13 @@ def bar_plot(new_series, category):
         x=s.index, y=s.array,
         text=perc,
         textposition='auto',
-    )])
+    )],
+    layout = go.Layout(
+                        xaxis = dict(
+                            categoryorder = categoryorder
+                            )
+                        )
+    )
 
     # Customize aspect
     fig.update_traces(marker_color='rgb(0,150,136)', marker_line_color='rgb(3,97,88)',
