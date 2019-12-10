@@ -58,14 +58,22 @@ def index_compare(df1, df2, category):
     gini_norm2 = np.divide(gini2 * s2, s2-1)
     J2 = evenness(s2, shannon2)
 
-    indices = ['Gini Index', 'Shannon Index']
+    y=np.array([0,0.5,0.7,0.85,0.95,1])
+    colors=np.array(['rgb(255,255,255)']*y.shape[0])
+    colors[y<0.5]='red'
+    colors[y>=0.5]='orange'
+    colors[y>=0.7]='lightgreen'
+    colors[y>=0.85]='green'
+    colors[y>=0.95]='darkgreen'
 
-    fig = go.Figure(data=[
-    go.Bar(name="Univariate", x=indices, y=[gini_norm1, J1]),
-    go.Bar(name="Joint", x=indices, y=[gini_norm2, J2])
-    ])
+    indices = ['Gini Index', 'Shannon Index']
+    trace_uni = go.Bar(name="Univariate", x=indices, y=[gini_norm1, J1], marker= dict(color="rgb(0, 150, 98)"))
+    trace_joint = go.Bar(name="Joint", x=indices, y=[gini_norm2, J2],  marker= dict(color="rgb(0, 120, 150)"))
+    fig = go.Figure()
+    fig.add_trace(trace_uni)
+    fig.add_trace(trace_joint)
     # Change the bar mode
-    fig.update_layout(barmode='stack')
+    fig.update_layout(barmode='group')
     fig.show()
 
     # layout = go.Layout(
