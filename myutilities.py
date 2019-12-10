@@ -26,6 +26,10 @@ def compute_gini(f):
     return gini
 
 
+def compute_simpson(f):
+    return pd.np.sum(f ** 2, axis=0)
+
+
 def compute_shannon(f):
     return -pd.np.sum(f * np.log(f))
 
@@ -37,6 +41,58 @@ def evenness(s, H):
 
     Hmax = np.log(s)
     return np.divide(H, Hmax)
+
+
+def index_compare(df1, df2, category):
+    f1 = compute_frequency(df1)
+    gini1 = compute_gini(f1)
+    shannon1 = compute_shannon(f1)
+    s1 = df1.nunique()
+    gini_norm1 = np.divide(gini1 * s1, s1-1)
+    J1 = evenness(s1, shannon1)
+
+    f2 = compute_frequency(df2)
+    gini2 = compute_gini(f2)
+    shannon2 = compute_shannon(f2)
+    s2 = df2.nunique()
+    gini_norm2 = np.divide(gini2 * s2, s2-1)
+    J2 = evenness(s2, shannon2)
+
+    fig = go.Figure()
+
+    layout = go.Layout(
+        title="Index comparison between univariate and joint distribution",
+        xaxis = dict(
+            title = category + " + Target",
+            showticklabels=False),
+        yaxis = dict(
+            title = 'Index value'
+        )
+    )
+    fig.add_trace(go.Scatter(
+        x=[0, 2],
+        y=[gini_norm1, gini_norm2],
+        name="Gini Index",
+        mode = "lines+markers+text",
+        text = ["Univariate","Joint"],
+        textposition = "top right",
+        hoverinfo="y+text"
+    ))
+
+
+    fig.add_trace(go.Scatter(
+        x=[2.5, 4.5],
+        y=[J1, J2],
+        name="Shannon Index",
+        mode = "lines+markers+text",
+        text = ["Univariate","Joint"],
+        textposition = "top right",
+        hoverinfo="y+text"
+    ))
+
+    fig.update_layout(layout)
+
+    fig.show()
 
 
 def disproportion_index(df, category):
@@ -55,7 +111,7 @@ def disproportion_index(df, category):
                     line_color='rgb(0,150,136)',
                     fill_color='rgb(0,150,136)',
                     align='left',
-                    font = dict(color="white")),
+                    font=dict(color="white")),
         cells=dict(values=[[gini_norm.round(3)],  # 1st column
                            [J.round(3)]],  # 2nd column
                    line_color='rgb(0,150,136)',
@@ -64,7 +120,7 @@ def disproportion_index(df, category):
     ])
 
     fig.update_layout(width=600, height=300,
-                      title="Indici Di Disproporzione Per " + category)
+                      title="Disproportion for" + category)
     fig.show()
 
 
@@ -81,20 +137,20 @@ def bar_plot(new_series, category):
         text=perc,
         textposition='auto',
     )],
-    layout = go.Layout(
-                        xaxis = dict(
-                            categoryorder = categoryorder
-                            )
-                        )
+        layout=go.Layout(
+        xaxis=dict(
+            categoryorder=categoryorder
+        )
+    )
     )
 
     # Customize aspect
     fig.update_traces(marker_color='rgb(0,150,136)', marker_line_color='rgb(3,97,88)',
                       marker_line_width=1.5, opacity=0.8)
-    title = "Categoria: " + category + " - Frequenza degli attributi: "
-    for x in s.index:
-        title += str(x) + ", "
-    title = str(title)[:-2]
+    title = "Frequencies for {} class".format(category)
+    # for x in s.index:
+    #     title += str(x) + ", "
+    # title = str(title)[:-2]
     fig.update_layout(title_text=title)
 
     fig.show()
@@ -109,7 +165,7 @@ def heatmap_normal(x, y, z):
         z=z,
         x=x,
         y=y,
-        colorscale= greyscale(),
+        colorscale=greyscale(),
         colorbar=dict(
             tick0=0,
             dtick=1,
@@ -130,9 +186,11 @@ def chi2_pearson(column, df, target_column):
     chi2, p, dof, expected = ss.chi2_contingency(sexXdefault)
     x = list(sexXdefault.columns.values)
     y = list(sexXdefault.index.values)
-    psr = [x.round(3) for x in np.divide(sexXdefault.to_numpy() - expected, np.sqrt(expected))]
+    psr = [x.round(3) for x in np.divide(
+        sexXdefault.to_numpy() - expected, np.sqrt(expected))]
     #fig = heatmap_normal(x,y, psr)
-    fig = fig = ff.create_annotated_heatmap(z=psr, x=x, y=y, colorscale=greyscale())
+    fig = fig = ff.create_annotated_heatmap(
+        z=psr, x=x, y=y, colorscale=greyscale())
     fig.update_layout(
         title={
             'text': "Pearson Residuals For {} Attribute".format(column),
@@ -180,41 +238,42 @@ def hide_toggle(for_next=False):
 
     return HTML(html)
 
+
 def greyscale():
     g = [
-            # Let first 10% (0.1) of the values have color rgb(0, 0, 0)
-            [0, "rgb(0, 0, 0)"],
-            [0.1, "rgb(0, 0, 0)"],
+        # Let first 10% (0.1) of the values have color rgb(0, 0, 0)
+        [0, "rgb(0, 0, 0)"],
+        [0.1, "rgb(0, 0, 0)"],
 
-            # # Let values between 10-20% of the min and max of z
-            # # have color rgb(20, 20, 20)
-            [0.1, "rgb(20, 20, 20)"],
-            [0.2, "rgb(20, 20, 20)"],
+        # # Let values between 10-20% of the min and max of z
+        # # have color rgb(20, 20, 20)
+        [0.1, "rgb(20, 20, 20)"],
+        [0.2, "rgb(20, 20, 20)"],
 
-            # # Values between 20-30% of the min and max of z
-            # # have color rgb(40, 40, 40)
-            [0.2, "rgb(40, 40, 40)"],
-            [0.3, "rgb(40, 40, 40)"],
+        # # Values between 20-30% of the min and max of z
+        # # have color rgb(40, 40, 40)
+        [0.2, "rgb(40, 40, 40)"],
+        [0.3, "rgb(40, 40, 40)"],
 
-            [0.3, "rgb(60, 60, 60)"],
-            [0.4, "rgb(60, 60, 60)"],
+        [0.3, "rgb(60, 60, 60)"],
+        [0.4, "rgb(60, 60, 60)"],
 
-            [0.4, "rgb(80, 80, 80)"],
-            [0.5, "rgb(80, 80, 80)"],
+        [0.4, "rgb(80, 80, 80)"],
+        [0.5, "rgb(80, 80, 80)"],
 
-            [0.5, "rgb(100, 100, 100)"],
-            [0.6, "rgb(100, 100, 100)"],
+        [0.5, "rgb(100, 100, 100)"],
+        [0.6, "rgb(100, 100, 100)"],
 
-            [0.6, "rgb(120, 120, 120)"],
-            [0.7, "rgb(120, 120, 120)"],
+        [0.6, "rgb(120, 120, 120)"],
+        [0.7, "rgb(120, 120, 120)"],
 
-            [0.7, "rgb(140, 140, 140)"],
-            [0.8, "rgb(140, 140, 140)"],
+        [0.7, "rgb(140, 140, 140)"],
+        [0.8, "rgb(140, 140, 140)"],
 
-            [0.8, "rgb(160, 160, 160)"],
-            [0.9, "rgb(160, 160, 160)"],
+        [0.8, "rgb(160, 160, 160)"],
+        [0.9, "rgb(160, 160, 160)"],
 
-            [0.9, "rgb(180, 180, 180)"],
-            [1.0, "rgb(180, 180, 180)"]
-        ]
+        [0.9, "rgb(180, 180, 180)"],
+        [1.0, "rgb(180, 180, 180)"]
+    ]
     return g
